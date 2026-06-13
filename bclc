@@ -1,0 +1,177 @@
+#!/bin/bash
+
+# calc script to compute base conversions and logic gate operations
+
+binary_to_decimal() {
+	if [[ $(echo "$1" | tr -d ' ') =~ ^[01]+$ ]]; then
+		count=0
+		result=0
+		input=$(echo "$1" | tr -d ' ' | rev)
+		while read -n1 char; do
+			if (( char == 1 )); then
+				(( result += 2**count ))
+			fi
+			(( count++ ))
+		done <<< "$input"
+	else
+		echo "input_error: invalid binary"
+	fi
+
+	echo "$result"
+}
+
+decimal_to_binary() {
+	num=$1
+	arrpos=0;
+	declare -a result
+	if [[ $1 =~ ^[0-9]+$ ]]; then
+		if (( num == 0 )); then
+			result[arrpos]=0
+			(( arrpos++ ))
+		else
+			while (( num != 0 )); do
+				if (( num % 2 == 0 )); then
+					result[arrpos]=0
+					(( arrpos++ ))
+				else
+					result[arrpos]=1
+					(( arrpos++ ))
+				fi
+				num=$(( num / 2 ))
+			done
+		fi
+	else
+		echo "input_error: invalid decimal"
+	fi
+
+	result=$(echo "${result[@]}" | tr -d ' ' | rev)
+	echo "$result"
+}
+
+hex_to_binary() {
+	declare -a res_container
+	index=0
+        if [[ $(echo "$1" | tr -d ' ') =~ ^[0-9A-Fa-f]+$ ]]; then
+                while read -n1 char; do
+                        if [[ $char =~ ^[0-9]$ ]]; then
+				res=$(decimal_to_binary $char)
+				if [[ "${#res}" -lt 4 ]]; then
+					padded_zeros="000$res"
+					final_res=${padded_zeros: -4:4}
+					res_container[$index]="$final_res"
+					(( index++ ))
+				else
+					res_container[$index]="$res"
+					(( index++ ))
+				fi
+			else
+				case "$char" in
+					A | a)
+						res_container[$index]="1010"
+						(( index++ ))
+						;;
+					B | b)
+						res_container[$index]="1011"
+						(( index++ ))
+						;;
+					C | c)
+						res_container[$index]="1100"
+						(( index++ ))
+						;;
+					D | d)
+						res_container[$index]="1101"
+						(( index++ ))
+						;;
+					E | e)
+						res_container[$index]="1110"
+						(( index++ ))
+						;;
+					F | f)
+						res_container[$index]="1111"
+						(( index++ ))
+						;;
+				esac
+			fi
+                done <<< $(echo "$1" | tr -d ' ')
+        else
+                echo "input_error: invalid hexadecimal"
+        fi
+
+	result=$(echo ${res_container[@]})
+	echo $result
+}
+
+binary_to_hex() {
+	if [[ $(echo "$1" | tr -d ' ') =~ ^[01]+$ ]]; then
+		declare -a res_container
+		index=0
+		while read -n4 four; do
+			[[ -z "$four" ]] && continue
+			reverse_four=$(echo "$four" | rev)
+			count=0
+			res=0
+			while read -n1 char; do
+				if (( char == 1 )); then
+					(( res += 2**count ))
+					(( count++ ))
+				else
+					(( count++ ))
+				fi
+			done <<< "$reverse_four"
+
+			if (( res <= 9 )); then
+				res_container[$index]="$res"
+				(( index++ ))
+			else
+				case "$res" in
+					10)
+						res_container[$index]="A"
+						(( index++ ))
+						;;
+					11)
+						res_container[$index]="B"
+						(( index++ ))
+						;;
+					12)
+						res_container[$index]="C"
+						(( index++ ))
+						;;
+					13)
+						res_container[$index]="D"
+						(( index++ ))
+						;;
+					14)
+						res_container[$index]="E"
+						(( index++ ))
+						;;
+					15)
+						res_container[$index]="F"
+						(( index++ ))
+						;;
+				esac
+			fi
+		done <<< $(echo "$1" | tr -d ' ')
+	else
+		echo "input_error: invalid binary"
+	fi
+	result=$(echo "${res_container[@]}" | tr -d ' ')
+	echo "$result"
+}
+
+# program running logic here
+
+if [[ "$1" == "-bd" ]]; then
+	result=$(binary_to_decimal "$2")
+	echo "$result"
+elif [[ "$1" == "-db" ]]; then
+	result=$(decimal_to_binary "$2")
+	echo "$result"
+elif [[ "$1" == "-hb" ]]; then
+	result=$(hex_to_binary "$2")
+	echo "$result"
+elif [[ "$1" == "-bh" ]]; then
+	result=$(binary_to_hex "$2")
+	echo "$result"
+else
+	echo "flag_error: unrecognized flag"
+fi
