@@ -6,6 +6,9 @@ A lightweight CLI tool for base conversions written in bash.
 - Binary to decimal
 - Hexadecimal to binary
 - Binary to hexadecimal
+- Binary to octal
+- Octal to binary
+- Decimal to hexadecimal
 
 ## Installation
 ```bash
@@ -16,45 +19,48 @@ chmod +x bclc.sh
 
 ## Usage
 ```bash
-./bclc.sh [flag] [value]
+./bclc [flag] [value]
 ```
 
 ## Flags
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `-db` | Decimal to binary | `./bclc.sh -db 276` |
-| `-bd` | Binary to decimal | `./bclc.sh -bd 100010100` |
-| `-hb` | Hexadecimal to binary | `./bclc.sh -hb 1C00F6` |
-| `-bh` | Binary to hexadecimal | `./bclc.sh -bh 10011111` |
+| `-db` | Decimal to binary | `./bclc -db 276` |
+| `-bd` | Binary to decimal | `./bclc -bd 100010100` |
+| `-hb` | Hexadecimal to binary | `./bclc -hb 1C00F6` |
+| `-bh` | Binary to hexadecimal | `./bclc -bh 10011111` |
+| `-bo` | Binary to octal | `./bclc -bo 10011111` |
+| `-ob` | Octal to binary | `./bclc -ob 172` |
+| `-dh` | Decimal to hexadecimal | `./bclc -dh 65636` |
 
 ## Examples
 ```bash
-$ ./bclc.sh -db 276
+$ ./bclc -db 276
 100010100
 
-$ ./bclc.sh -bd 100010100
+$ ./bclc -bd 100010100
 276
 
-$ ./bclc.sh -hb 1C00F6
+$ ./bclc -hb 1C00F6
 0001 1100 0000 0000 1111 0110
 
-$ ./bclc.sh -bh 10011111
+$ ./bclc -bh 10011111
 9F
 ```
 
 ## Error Handling
 bclc validates input before processing and returns descriptive errors:
 ```bash
-$ ./bclc.sh -bd 123abc
+$ ./bclc -bd 123abc
 input_error: invalid binary
 
-$ ./bclc.sh -db hello
+$ ./bclc -db hello
 input_error: invalid decimal
 
-$ ./bclc.sh -hb XYZ
+$ ./bclc -hb XYZ
 input_error: invalid hexadecimal
 
-$ ./bclc.sh -xx 123
+$ ./bclc -xx 123
 flag_error: unrecognized flag
 ```

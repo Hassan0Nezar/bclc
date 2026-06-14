@@ -2,6 +2,34 @@
 
 # calc script to compute base conversions and logic gate operations
 
+# HELPER FUNCTIONS
+
+# i made this a function as i had already reused it in 2 other functions so i thought this would be better code. it pads a string of characters with 0 according to a multiple u choose
+# it checks whether the strings length is divisble by the multiple or not, if its not it sees how many 0's need to be padded to make the length divisble by the multiple.
+pad_to_multiple() {
+	local input="$1"
+	local multiple="$2"
+
+	local adds=0
+	local len=${#input}
+
+	while (( len % $multiple != 0 )); do
+		(( len += 1 ))
+		(( adds++ ))
+	done
+
+	local padding=""
+	for (( i=0; i < $adds; i++ )); do
+		padding="0${padding}"
+	done
+
+	input="${padding}${input}"
+
+	echo "$input"
+}
+
+# PROGRAM & LOGIC FUNCTIONS
+
 binary_to_decimal() {
 	if [[ $(echo "$1" | tr -d ' ') =~ ^[01]+$ ]]; then # uses regex to check if $1 is a binary number (only containing 0 and 1)
 		count=0
@@ -158,21 +186,114 @@ binary_to_hex() {
 	echo "$result"
 }
 
+binary_to_octal() {
+	local -a res_container
+	local index=0
+	local input=$(echo "$1" | tr -d ' ')
+
+	if [[ "$input" =~ ^[01]+$ ]]; then # regex to check if a number is binary (only contains 0 or 1)
+
+# this if statment is triggered when the binary input length is not divisble by 3 which causes issues as the while loop takes chunks of 3 from the left
+# which will output the wrong octal equivelants and so this if statment works to find exactly what amount of padding 0's the binary needs to be ready for the while loop
+
+		if (( ${#input} % 3 != 0 )); then
+			input=$(pad_to_multiple "$input" 3)
+		fi
+
+		while read -n3 three; do
+			[[ -z "$three" ]] && continue # edge case as read -n4 reads the newline character at the end which is a blank string
+
+				local oct=$(binary_to_decimal $three) # uses binary_to_decimal() func so it turns 3 digit binary numbers 000-111 to decimal numbers from 0-7 which are basically octal
+				res_container[$index]=$oct
+				(( index++ ))
+		done <<< $input
+	else
+		echo "input_error: invalid binary"
+	fi
+
+	local result=$(echo ${res_container[@]} | tr -d ' ')
+	echo $result
+}
+
+octal_to_binary() {
+	local input=$(echo "$1" | tr -d ' ')
+
+	if [[ $input =~ ^[0-7]+$ ]]; then # regex to check if input is octal (only numbers between 0 and 7)
+
+		local -a res_container
+		local index=0
+
+		while read -n1 char; do
+			[[ -z $char ]] && continue
+
+			bin=$(decimal_to_binary $char) # turns octal number (0-7) using decimal_to_binary() function
+
+# this if statment checks if the outputted binary number is of length < 3, as each octal number is equivelant to 3 binary digits, so it should be padded with 0's if its not
+			if (( ${#bin} < 3 )); then
+				padded_bin="00$bin"
+				final_bin=${padded_bin: -3:3}
+
+				res_container[$index]=$final_bin
+				(( index++ ))
+			else
+				res_container[$index]=$bin
+				(( index++ ))
+			fi
+		done <<< $input
+	else
+		echo "input_error: invalid octal"
+	fi
+
+	result=$(echo ${res_container[@]} | tr -d ' ')
+	echo "$result"
+}
+
+decimal_to_hex() {
+	input=$(echo "$1" | tr -d ' ')
+	bin=$(decimal_to_binary $input)
+
+	if (( ${#bin} % 4 != 0 )); then
+		bin=$(pad_to_multiple "$bin" 4)
+	fi
+
+	hex=$(binary_to_hex $bin)
+
+	echo $hex
+}
+
 # program running logic, reading flags and user input (only reads positional parameters)
 # not programmed to read from stdin in pipelines or to read from files yet
 
-if [[ "$1" == "-bd" ]]; then
-	result=$(binary_to_decimal "$2")
-	echo "$result"
-elif [[ "$1" == "-db" ]]; then
-	result=$(decimal_to_binary "$2")
-	echo "$result"
-elif [[ "$1" == "-hb" ]]; then
-	result=$(hex_to_binary "$2")
-	echo "$result"
-elif [[ "$1" == "-bh" ]]; then
-	result=$(binary_to_hex "$2")
-	echo "$result"
-else
-	echo "flag_error: unrecognized flag"
-fi
+case "$1" in
+	"-bd")
+		result=$(binary_to_decimal "$2")
+		echo "$result"
+		;;
+	"-db")
+		result=$(decimal_to_binary "$2")
+		echo "$result"
+		;;
+	"-hb")
+		result=$(hex_to_binary "$2")
+		echo "$result"
+		;;
+	"-bh")
+		result=$(binary_to_hex "$2")
+		echo "$result"
+		;;
+	"-bo")
+		result=$(binary_to_octal "$2")
+		echo "$result"
+		;;
+	"-ob")
+		result=$(octal_to_binary "$2")
+		echo "$result"
+		;;
+	"-dh")
+		result=$(decimal_to_hex "$2")
+		echo "$result"
+		;;
+	*)
+		echo "flag_error: unrecognized flag"
+		;;
+esac
