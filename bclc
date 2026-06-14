@@ -3,11 +3,11 @@
 # calc script to compute base conversions and logic gate operations
 
 binary_to_decimal() {
-	if [[ $(echo "$1" | tr -d ' ') =~ ^[01]+$ ]]; then
+	if [[ $(echo "$1" | tr -d ' ') =~ ^[01]+$ ]]; then # uses regex to check if $1 is a binary number (only containing 0 and 1)
 		count=0
 		result=0
-		input=$(echo "$1" | tr -d ' ' | rev)
-		while read -n1 char; do
+		input=$(echo "$1" | tr -d ' ' | rev) # omits whitespace and reverses the string
+		while read -n1 char; do # reads one character from $input each iteration
 			if (( char == 1 )); then
 				(( result += 2**count ))
 			fi
@@ -24,7 +24,7 @@ decimal_to_binary() {
 	num=$1
 	arrpos=0;
 	declare -a result
-	if [[ $1 =~ ^[0-9]+$ ]]; then
+	if [[ $1 =~ ^[0-9]+$ ]]; then # uses regex to check if $1 is a decimal number (only containing numbers from 0-9)
 		if (( num == 0 )); then
 			result[arrpos]=0
 			(( arrpos++ ))
@@ -51,21 +51,21 @@ decimal_to_binary() {
 hex_to_binary() {
 	declare -a res_container
 	index=0
-        if [[ $(echo "$1" | tr -d ' ') =~ ^[0-9A-Fa-f]+$ ]]; then
-                while read -n1 char; do
-                        if [[ $char =~ ^[0-9]$ ]]; then
+        if [[ $(echo "$1" | tr -d ' ') =~ ^[0-9A-Fa-f]+$ ]]; then # uses regex to check if input is a hexadecimal (only containing 0-9 & A-F or a-f)
+                while read -n1 char; do # reads one character from $1 each iteration
+                        if [[ $char =~ ^[0-9]$ ]]; then # if statment that partitions logic if $char is 0-9, and else block for when $char is A-F
 				res=$(decimal_to_binary $char)
 				if [[ "${#res}" -lt 4 ]]; then
-					padded_zeros="000$res"
-					final_res=${padded_zeros: -4:4}
+					padded_zeros="000$res" # 1 hex digit is 4 binary digits, so the decimal equivelant is padded with 3 zeros
+					final_res=${padded_zeros: -4:4} # $padded_zeros is sliced from the 4th index from the end and read with 4 characters to get the 4 bit long binary
 					res_container[$index]="$final_res"
 					(( index++ ))
 				else
-					res_container[$index]="$res"
+					res_container[$index]="$res" # if outputted number is 4 bits long like 0b1000 which is equivelant to 8 in decimal
 					(( index++ ))
 				fi
 			else
-				case "$char" in
+				case "$char" in # swtich case for when $char is A-F, hardcoded logic for A-F
 					A | a)
 						res_container[$index]="1010"
 						(( index++ ))
@@ -103,14 +103,14 @@ hex_to_binary() {
 
 binary_to_hex() {
 	if [[ $(echo "$1" | tr -d ' ') =~ ^[01]+$ ]]; then
-		declare -a res_container
+		declare -a res_container # array to store outputs (used in the other functions)
 		index=0
-		while read -n4 four; do
-			[[ -z "$four" ]] && continue
+		while read -n4 four; do # reads 4 characters from $1 each iteration
+			[[ -z "$four" ]] && continue # edge case as read -n4 reads the newline character at the end which is a blank string
 			reverse_four=$(echo "$four" | rev)
 			count=0
 			res=0
-			while read -n1 char; do
+			while read -n1 char; do # reads 1 character from $char each iteration (nested while loop)
 				if (( char == 1 )); then
 					(( res += 2**count ))
 					(( count++ ))
@@ -119,7 +119,7 @@ binary_to_hex() {
 				fi
 			done <<< "$reverse_four"
 
-			if (( res <= 9 )); then
+			if (( res <= 9 )); then # if block for numbers less than or equal 9, and else block for 10-15 which is A-F in hex
 				res_container[$index]="$res"
 				(( index++ ))
 			else
@@ -158,7 +158,8 @@ binary_to_hex() {
 	echo "$result"
 }
 
-# program running logic here
+# program running logic, reading flags and user input (only reads positional parameters)
+# not programmed to read from stdin in pipelines or to read from files yet
 
 if [[ "$1" == "-bd" ]]; then
 	result=$(binary_to_decimal "$2")
