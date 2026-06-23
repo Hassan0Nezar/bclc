@@ -261,6 +261,51 @@ decimal_to_hex() {
 	echo $hex
 }
 
+hex_to_decimal() {
+	input=$(echo "$1" | tr -d ' ')
+	bin=$(hex_to_binary $input)
+
+	dec=$(binary_to_decimal "$bin")
+
+	echo $dec
+}
+
+decimal_to_octal() {
+	input=$(echo "$1" | tr -d ' ')
+	bin=$(decimal_to_binary $input)
+
+	oct=$(binary_to_octal "$bin")
+
+	echo $oct
+}
+
+octal_to_decimal() {
+	input=$(echo "$1" | tr -d ' ')
+	bin=$(octal_to_binary $input)
+
+	dec=$(binary_to_decimal "$bin")
+
+	echo $dec
+}
+
+hex_to_octal() {
+	input=$(echo "$1" | tr -d ' ')
+	bin=$(hex_to_binary $input)
+
+	oct=$(binary_to_octal "$bin")
+
+	echo $oct
+}
+
+octal_to_hex() {
+	input=$(echo "$1" | tr -d ' ')
+	bin=$(octal_to_binary $input)
+
+	hex=$(binary_to_hex "$bin")
+
+	echo $hex
+}
+
 # program running logic, reading flags and user input (only reads positional parameters)
 # not programmed to read from stdin in pipelines or to read from files yet
 
@@ -292,6 +337,41 @@ case "$1" in
 	"-dh")
 		result=$(decimal_to_hex "$2")
 		echo "$result"
+		;;
+	"-hd")
+		result=$(hex_to_decimal "$2")
+		echo "$result"
+		;;
+	"-do")
+		result=$(decimal_to_octal "$2")
+		echo "$result"
+		;;
+	"-od")
+		result=$(octal_to_decimal "$2")
+		echo "$result"
+		;;
+	"-ho")
+		result=$(hex_to_octal "$2")
+		echo "$result"
+		;;
+	"-oh")
+		result=$(octal_to_hex "$2")
+		echo "$result"
+		;;
+	"-kmap")
+		if (( $# - 1 == 2 )); then
+			if [[ ${#2} -eq 1 ]] && (( $2 >= 1 && $2 <= 4 )); then
+				if [[ $3 =~ ^[01]+$ ]] && (( ${#3} == 2**$3 )); then
+					./kmap.exe "$2" "$3" # will work when kmap.cpp is done and compiled (will never happen)
+				else
+					echo "paramter_error: table_elments are either more or less than $(( $3 * $3 )). table_elements should also be 0/1"
+				fi
+			else
+				echo "parameter_error: invalid variable_amount length (1 through 4)"
+			fi
+		else
+			echo "parameter_error: not enough parameters. (-kmap <variable_amount> <table_elements>)"
+		fi
 		;;
 	*)
 		echo "flag_error: unrecognized flag"

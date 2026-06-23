@@ -9,6 +9,12 @@ A lightweight CLI tool for base conversions written in bash.
 - Binary to octal
 - Octal to binary
 - Decimal to hexadecimal
+- Hexadecimal to decimal
+- Decimal to octal
+- Octal to decimal
+- Hexadecimal to octal
+- Octal to hexadecimal
+- Simple K-map solver
 
 ## Installation
 ```bash
@@ -33,7 +39,13 @@ chmod +x bclc.sh
 | `-bo` | Binary to octal | `./bclc -bo 10011111` |
 | `-ob` | Octal to binary | `./bclc -ob 172` |
 | `-dh` | Decimal to hexadecimal | `./bclc -dh 65636` |
-
+| `-hd` | Hexadecimal to decimal | `./bclc -hd FF9` |
+| `-do` | Decimal to octal | `./bclc -do 1502` |
+| `-od` | Octal to decimal | `./bclc -dh 65636` |
+| `-ho` | Hexadecimal to octal | `./bclc -ho C10B` |
+| `-oh` | Octal to hexadecimal | `./bclc -oh 424` |
+| `-kmap` | Simple K-map solver | `./bclc -kmap 3 11010001` |
+ 
 ## Examples
 ```bash
 $ ./bclc -db 276
